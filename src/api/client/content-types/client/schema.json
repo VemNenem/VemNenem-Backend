@@ -35,6 +35,24 @@
       "relation": "oneToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "client"
+    },
+    "lists": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::list.list",
+      "mappedBy": "client"
+    },
+    "schedules": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::schedule.schedule",
+      "mappedBy": "client"
+    },
+    "father_user": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "client_access"
     }
   }
 }
