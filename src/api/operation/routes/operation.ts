@@ -24,5 +24,15 @@ module.exports = {
             path: "/updateClient",
             handler: "operation.updateClient",
         },
+        {
+            method: "POST",
+            path: "/createList",
+            handler: "operation.createList",
+        },
+        {
+            method: "POST",
+            path: "/createTopic",
+            handler: "operation.createTopic",
+        },
     ]
 }
