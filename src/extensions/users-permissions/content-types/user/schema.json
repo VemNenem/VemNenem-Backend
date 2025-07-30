@@ -72,11 +72,13 @@
       "target": "api::client.client",
       "mappedBy": "user"
     },
-    "client_access": {
+    "refresh_tokens": {
       "type": "relation",
-      "relation": "oneToOne",
-      "target": "api::client.client",
-      "mappedBy": "father_user"
+      "relation": "oneToMany",
+      "target": "plugin::refresh-token.token",
+      "mappedBy": "user",
+      "private": true,
+      "configurable": false
     }
   }
 }
