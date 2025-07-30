@@ -64,6 +64,72 @@ class ClientService {
         })
     }
 
+    async getMyData(ctx) {
+        try {
+            const { documentId: documentId } = ctx.state.user;
+
+            const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                documentId: documentId, populate: ['client']
+            })
+
+            if (!user || !user.client) {
+                throw new ApplicationError("Usuário não encontrado")
+            }
+            const client = await strapi.documents('api::client.client').findOne({
+                documentId: user.client.documentId, populate: ['user']
+            })
+
+            return client
+        } catch (error) {
+            if (error instanceof ApplicationError) {
+                throw new ApplicationError(error.message);
+            }
+            console.log(error)
+            throw new ApplicationError("Ocorreu um erro, tente novamente")
+        }
+    }
+
+    async updateClient(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const { documentId: documentId } = ctx.state.user;
+                const {
+                    name,
+                    probableDateOfDelivery,
+                    babyGender,
+                    fatherName,
+                    babyName,
+                }: CreateClientDTO = ctx.request.body;
+                const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                    documentId: documentId, populate: ['client']
+                })
+
+                if (!user || !user.client) {
+                    throw new ApplicationError("Usuário não encontrado")
+                }
+
+                const upclient = await strapi.documents('api::client.client').update({
+                    documentId: user.client.documentId,
+                    data: {
+                        name: name,
+                        probableDateOfDelivery: probableDateOfDelivery,
+                        babyGender: babyGender,
+                        fatherName: fatherName,
+                        babyName: babyName
+                    }, populate: ['user']
+                })
+
+                return upclient
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("Ocorreu um erro, tente novamente")
+            }
+        })
+    }
+
 
 
 } export { ClientService };

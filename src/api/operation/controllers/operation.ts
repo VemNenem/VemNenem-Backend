@@ -10,4 +10,12 @@ export default factories.createCoreController('api::operation.operation', ({ str
         const sales = new ClientService();
         return sales.createClient(ctx);
     },
+    async getMyData(ctx) {
+        const sales = new ClientService();
+        return sales.getMyData(ctx);
+    },
+    async updateClient(ctx) {
+        const sales = new ClientService();
+        return sales.updateClient(ctx);
+    },
 }));

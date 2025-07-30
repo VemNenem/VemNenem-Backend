@@ -14,5 +14,15 @@ module.exports = {
             path: "/createClient",
             handler: "operation.createClient",
         },
+        {
+            method: "GET",
+            path: "/getMyData",
+            handler: "operation.getMyData",
+        },
+        {
+            method: "PUT",
+            path: "/updateClient",
+            handler: "operation.updateClient",
+        },
     ]
 }
