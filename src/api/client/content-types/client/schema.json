@@ -47,6 +47,20 @@
       "relation": "oneToMany",
       "target": "api::schedule.schedule",
       "mappedBy": "client"
+    },
+    "acceptTerm": {
+      "type": "boolean",
+      "default": false
+    },
+    "acceptTermDate": {
+      "type": "datetime"
+    },
+    "acceptPrivacyPoliciesDate": {
+      "type": "datetime"
+    },
+    "acceptPrivacyPolicies": {
+      "type": "boolean",
+      "default": false
     }
   }
 }

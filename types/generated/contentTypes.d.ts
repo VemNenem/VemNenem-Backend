@@ -384,6 +384,11 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
     draftAndPublish: false;
   };
   attributes: {
+    acceptPrivacyPolicies: Schema.Attribute.Boolean &
+      Schema.Attribute.DefaultTo<false>;
+    acceptPrivacyPoliciesDate: Schema.Attribute.DateTime;
+    acceptTerm: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    acceptTermDate: Schema.Attribute.DateTime;
     babyGender: Schema.Attribute.Enumeration<['Masculino', 'Feminino']>;
     babyName: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
