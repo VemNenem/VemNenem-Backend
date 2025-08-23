@@ -10,6 +10,15 @@ export default factories.createCoreRouter('api::term.term');
 module.exports = {
 
     routes: [
-
+        {
+            method: "PATCH",
+            path: "/acceptTerms",
+            handler: "term.acceptTerms",
+        },
+        {
+            method: "PUT",
+            path: "/updateTerms",
+            handler: "term.updateTerms",
+        },
     ]
 }
