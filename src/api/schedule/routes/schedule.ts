@@ -5,3 +5,14 @@
 import { factories } from '@strapi/strapi';
 
 export default factories.createCoreRouter('api::schedule.schedule');
+
+module.exports = {
+
+    routes: [
+        {
+            method: "GET",
+            path: "/getDaySchedule",
+            handler: "schedule.getDaySchedule",
+        },
+    ]
+}
