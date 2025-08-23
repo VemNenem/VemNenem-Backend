@@ -309,6 +309,89 @@ class ListService {
     }
 
 
+    async deleteList(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const { documentId: documentId } = ctx.state.user;
+                const { listDocumentId } = ctx.request.query;
+
+                const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                    documentId: documentId, populate: ['client']
+                })
+
+                if (!user || !user.client) {
+                    throw new ApplicationError("Usuário não encontrado")
+                }
+
+                const list = await strapi.documents('api::list.list').findOne({
+                    documentId: listDocumentId, populate: ['topics']
+                })
+
+                if (!list) {
+                    throw new ApplicationError("Lista não encontrada")
+                }
+
+                if (list.topics.length > 0) {
+                    for (const topic of list.topics) {
+                        await strapi.documents('api::topic.topic').delete({
+                            documentId: topic.documentId
+                        })
+                    }
+                }
+
+                await strapi.documents('api::list.list').delete({
+                    documentId: list.documentId
+                })
+
+                return "Deletado com Sucesso"
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("Ocorreu um erro, tente novamente")
+            }
+        })
+    }
+
+    async deleteTopic(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const { documentId: documentId } = ctx.state.user;
+                const { topicDocumentId } = ctx.request.query;
+
+                const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                    documentId: documentId, populate: ['client']
+                })
+
+                if (!user || !user.client) {
+                    throw new ApplicationError("Usuário não encontrado")
+                }
+
+                const topic = await strapi.documents('api::topic.topic').findOne({
+                    documentId: topicDocumentId, populate: ['list']
+                })
+
+                if (!topic) {
+                    throw new ApplicationError("Tópico não encontrado")
+                }
+
+                await strapi.documents('api::topic.topic').delete({
+                    documentId: topic.documentId,
+                })
+
+                return "Deletado com sucesso"
+
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("Ocorreu um erro, tente novamente")
+            }
+        })
+    }
+
 
 
 

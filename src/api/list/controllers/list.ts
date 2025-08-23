@@ -33,4 +33,12 @@ export default factories.createCoreController('api::list.list', ({ strapi }) => 
         const sales = new ListService();
         return sales.updateList(ctx);
     },
+    async deleteList(ctx) {
+        const sales = new ListService();
+        return sales.deleteList(ctx);
+    },
+    async deleteTopic(ctx) {
+        const sales = new ListService();
+        return sales.deleteTopic(ctx);
+    },
 }));

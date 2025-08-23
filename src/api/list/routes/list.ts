@@ -39,5 +39,15 @@ module.exports = {
             path: "/updateTopic",
             handler: "list.updateTopic",
         },
+        {
+            method: "DELETE",
+            path: "/deleteList",
+            handler: "list.deleteList",
+        },
+        {
+            method: "DELETE",
+            path: "/deleteTopic",
+            handler: "list.deleteTopic",
+        },
     ]
 }
