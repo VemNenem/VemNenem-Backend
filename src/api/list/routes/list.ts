@@ -29,5 +29,15 @@ module.exports = {
             path: "/listTopic",
             handler: "list.listTopic",
         },
+        {
+            method: "PUT",
+            path: "/updateList",
+            handler: "list.updateList",
+        },
+        {
+            method: "PUT",
+            path: "/updateTopic",
+            handler: "list.updateTopic",
+        },
     ]
 }

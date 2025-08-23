@@ -188,6 +188,125 @@ class ListService {
         }
     }
 
+    async updateList(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const { documentId: documentId } = ctx.state.user;
+                const { listDocumentId } = ctx.request.query;
+                const {
+                    name
+                }: CreateListDTO = ctx.request.body;
+
+                const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                    documentId: documentId, populate: ['client']
+                })
+
+                if (!user || !user.client) {
+                    throw new ApplicationError("Usuário não encontrado")
+                }
+
+                const list = await strapi.documents('api::list.list').findOne({
+                    documentId: listDocumentId
+                })
+
+                if (!list) {
+                    throw new ApplicationError("Lista não encontrada")
+                }
+
+                const lists = await strapi.documents('api::list.list').findMany({
+                    filters: {
+                        client: {
+                            documentId: user.client.documentId
+                        },
+                        name: name,
+                        documentId: {
+                            $ne: list.documentId
+                        }
+                    }
+                })
+
+                if (lists.length > 0) {
+                    throw new ApplicationError("Já existe uma lista com esse nome")
+                }
+
+                const up = await strapi.documents('api::list.list').update({
+                    documentId: list.documentId,
+                    data: {
+                        name: name
+                    }
+                })
+
+                return up
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("Ocorreu um erro, tente novamente")
+            }
+        })
+    }
+
+
+    async updateTopic(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const { documentId: documentId } = ctx.state.user;
+                const { topicDocumentId } = ctx.request.query;
+                const {
+                    name
+                }: CreateTopicDTO = ctx.request.body;
+
+                const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                    documentId: documentId, populate: ['client']
+                })
+
+                if (!user || !user.client) {
+                    throw new ApplicationError("Usuário não encontrado")
+                }
+
+                const topic = await strapi.documents('api::topic.topic').findOne({
+                    documentId: topicDocumentId, populate: ['list']
+                })
+
+                if (!topic) {
+                    throw new ApplicationError("Tópico não encontrado")
+                }
+
+                const topics = await strapi.documents('api::topic.topic').findMany({
+                    filters: {
+                        list: {
+                            documentId: topic.list.documentId
+                        },
+                        name: name,
+                        documentId: {
+                            $ne: topic.documentId
+                        }
+                    }
+                })
+
+                if (topics.length > 0) {
+                    throw new ApplicationError("Já existe um tópico com esse nome")
+                }
+
+                const up = await strapi.documents('api::topic.topic').update({
+                    documentId: topic.documentId,
+                    data: {
+                        name: name
+                    }
+                })
+
+                return up
+
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("Ocorreu um erro, tente novamente")
+            }
+        })
+    }
 
 
 
