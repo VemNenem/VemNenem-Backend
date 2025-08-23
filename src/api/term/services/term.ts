@@ -157,4 +157,48 @@ class TermService {
             throw new ApplicationError("Ocorreu um erro, tente novamente")
         }
     }
+
+    async listTerms(ctx) {
+        try {
+            const { type } = ctx.request.query
+            let term = null
+
+            if (type === "privacy") {
+                const terms = await strapi.documents('api::term.term').findMany({
+                    filters: {
+                        name: "Política de Privacidade"
+                    }
+                })
+
+                if (terms.length === 0) {
+                    throw new ApplicationError("Política de Privacidade não encontrado")
+                }
+                term = terms[0]
+            } else {
+                const terms = await strapi.documents('api::term.term').findMany({
+                    filters: {
+                        name: "Termo de Uso"
+                    }
+                })
+
+                if (terms.length === 0) {
+                    throw new ApplicationError("Termo de Uso não encontrado")
+                }
+                term = terms[0]
+            }
+
+
+            if (!term) {
+                throw new ApplicationError("Termos não encontrados")
+            }
+
+            return term
+        } catch (error) {
+            if (error instanceof ApplicationError) {
+                throw new ApplicationError(error.message);
+            }
+            console.log(error)
+            throw new ApplicationError("Ocorreu um erro, tente novamente")
+        }
+    }
 } export { TermService }

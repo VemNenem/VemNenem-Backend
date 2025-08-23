@@ -20,5 +20,10 @@ module.exports = {
             path: "/updateTerms",
             handler: "term.updateTerms",
         },
+        {
+            method: "GET",
+            path: "/listTerms",
+            handler: "term.listTerms",
+        },
     ]
 }

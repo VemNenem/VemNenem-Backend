@@ -16,4 +16,8 @@ export default factories.createCoreController('api::term.term', ({ strapi }) => 
         const sales = new TermService();
         return sales.updateTerms(ctx);
     },
+    async listTerms(ctx) {
+        const sales = new TermService();
+        return sales.listTerms(ctx);
+    },
 }));
