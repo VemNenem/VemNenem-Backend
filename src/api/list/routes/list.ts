@@ -19,5 +19,15 @@ module.exports = {
             path: "/createTopic",
             handler: "list.createTopic",
         },
+        {
+            method: "GET",
+            path: "/listList",
+            handler: "list.listList",
+        },
+        {
+            method: "GET",
+            path: "/listTopic",
+            handler: "list.listTopic",
+        },
     ]
 }

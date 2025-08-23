@@ -119,6 +119,75 @@ class ListService {
         })
     }
 
+    async listList(ctx) {
+        try {
+            const { documentId: documentId } = ctx.state.user;
+
+            const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                documentId: documentId, populate: ['client']
+            })
+
+            if (!user || !user.client) {
+                throw new ApplicationError("Usuário não encontrado")
+            }
+
+            const list = await strapi.documents('api::list.list').findMany({
+                filters: {
+                    client: {
+                        documentId: user.client.documentId
+                    }
+                }
+            })
+
+            return list
+        } catch (error) {
+            if (error instanceof ApplicationError) {
+                throw new ApplicationError(error.message);
+            }
+            console.log(error)
+            throw new ApplicationError("Ocorreu um erro, tente novamente")
+        }
+    }
+
+    async listTopic(ctx) {
+        try {
+            const { listDocumentId } = ctx.request.query;
+            const { documentId: documentId } = ctx.state.user;
+
+            const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                documentId: documentId, populate: ['client']
+            })
+
+            if (!user || !user.client) {
+                throw new ApplicationError("Usuário não encontrado")
+            }
+
+            const list = await strapi.documents('api::list.list').findOne({
+                documentId: listDocumentId
+            })
+
+            if (!list) {
+                throw new ApplicationError("Lista não encontrada")
+            }
+
+            const topics = await strapi.documents('api::topic.topic').findMany({
+                filters: {
+                    list: {
+                        documentId: list.documentId
+                    }
+                }
+            })
+
+            return topics
+        } catch (error) {
+            if (error instanceof ApplicationError) {
+                throw new ApplicationError(error.message);
+            }
+            console.log(error)
+            throw new ApplicationError("Ocorreu um erro, tente novamente")
+        }
+    }
+
 
 
 
