@@ -20,4 +20,8 @@ export default factories.createCoreController('api::client.client', ({ strapi })
         const sales = new ClientService();
         return sales.updateClient(ctx);
     },
+    async getHome(ctx) {
+        const sales = new ClientService();
+        return sales.getHome(ctx);
+    },
 }))

@@ -140,6 +140,82 @@ class ClientService {
         })
     }
 
+    async getHome(ctx) {
+        try {
+            const { documentId } = ctx.state.user;
+
+            const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                documentId,
+                populate: ['client']
+            });
+
+            if (!user || !user.client) {
+                throw new ApplicationError("Usuário não encontrado");
+            }
+
+            const client = await strapi.documents('api::client.client').findOne({
+                documentId: user.client.documentId,
+                populate: ['user']
+            });
+
+            const probableDateOfDelivery = new Date(client.probableDateOfDelivery);
+
+            // Data estimada da concepção = DPP - 280 dias (40 semanas)
+            const conceptionDate = new Date(probableDateOfDelivery);
+            conceptionDate.setDate(conceptionDate.getDate() - 280);
+
+            const today = new Date();
+
+            // Semanas de gravidez até agora
+            const diffMs = today.getTime() - conceptionDate.getTime();
+            const weeksPregnant = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 7));
+
+            // Quanto falta até o parto
+            const remainingMs = probableDateOfDelivery.getTime() - today.getTime();
+            const remainingWeeks = Math.floor(remainingMs / (1000 * 60 * 60 * 24 * 7));
+            const remainingDays = Math.floor(
+                (remainingMs % (1000 * 60 * 60 * 24 * 7)) / (1000 * 60 * 60 * 24)
+            );
+
+            // Intervalo do dia atual
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const endOfDay = new Date();
+            endOfDay.setHours(23, 59, 59, 999);
+
+            const schedule = await strapi.documents('api::schedule.schedule').findMany({
+                filters: {
+                    client: {
+                        documentId: user.client.documentId
+                    },
+                    date: {
+                        $gte: startOfDay,
+                        $lte: endOfDay
+                    }
+                }
+            });
+
+            const data = {
+                currentWeek: weeksPregnant, // em que semana está
+                remaining: {
+                    weeks: remainingWeeks,
+                    days: remainingDays
+                },
+                schedule
+            };
+
+            return data;
+        } catch (error) {
+            if (error instanceof ApplicationError) {
+                throw new ApplicationError(error.message);
+            }
+            console.log(error);
+            throw new ApplicationError("Ocorreu um erro, tente novamente");
+        }
+    }
+
+
 
 
 } export { ClientService };

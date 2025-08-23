@@ -24,5 +24,10 @@ module.exports = {
             path: "/updateClient",
             handler: "client.updateClient",
         },
+        {
+            method: "GET",
+            path: "/getHome",
+            handler: "client.getHome",
+        },
     ]
 }
