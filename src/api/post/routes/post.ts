@@ -14,5 +14,10 @@ module.exports = {
             path: "/listPostsInClient",
             handler: "post.listPostsInClient",
         },
+        {
+            method: "GET",
+            path: "/getPostsInClient",
+            handler: "post.getPostsInClient",
+        },
     ]
 }

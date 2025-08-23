@@ -12,4 +12,8 @@ export default factories.createCoreController('api::post.post', ({ strapi }) => 
         const sales = new PostService();
         return sales.listPostsInClient(ctx);
     },
+    async getPostsInClient(ctx) {
+        const sales = new PostService();
+        return sales.getPostsInClient(ctx);
+    },
 }));

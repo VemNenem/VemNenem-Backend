@@ -35,4 +35,35 @@ class PostService {
             throw new ApplicationError("Ocorreu um erro, tente novamente")
         }
     }
+
+    async getPostsInClient(ctx) {
+        try {
+            const { documentId: documentId } = ctx.state.user;
+            const { postDocumentId } = ctx.request.query;
+
+            const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                documentId: documentId, populate: ['client']
+            })
+
+            if (!user || !user.client) {
+                throw new ApplicationError("Usuário não encontrado")
+            }
+
+            const post = await strapi.documents('api::post.post').findOne({
+                documentId: postDocumentId, populate: ['image']
+            })
+
+            if (!post) {
+                throw new ApplicationError("Post não encontrado")
+            }
+
+            return post
+        } catch (error) {
+            if (error instanceof ApplicationError) {
+                throw new ApplicationError(error.message);
+            }
+            console.log(error)
+            throw new ApplicationError("Ocorreu um erro, tente novamente")
+        }
+    }
 } export { PostService }
