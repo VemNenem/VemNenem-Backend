@@ -18,7 +18,10 @@
       "type": "string"
     },
     "date": {
-      "type": "datetime"
+      "type": "date"
+    },
+    "time": {
+      "type": "string"
     },
     "client": {
       "type": "relation",
