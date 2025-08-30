@@ -10,6 +10,10 @@ export default factories.createCoreRouter('api::childbirth-plan.childbirth-plan'
 module.exports = {
 
     routes: [
-
+        {
+            method: "GET",
+            path: "/listChildbirthPlan",
+            handler: "childbirth-plan.listChildbirthPlan",
+        },
     ]
 }
