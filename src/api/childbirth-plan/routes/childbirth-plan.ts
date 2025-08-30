@@ -15,5 +15,10 @@ module.exports = {
             path: "/listChildbirthPlan",
             handler: "childbirth-plan.listChildbirthPlan",
         },
+        {
+            method: "PATCH",
+            path: "/selectOrUnselectChildbirthPlan",
+            handler: "childbirth-plan.selectOrUnselectChildbirthPlan",
+        },
     ]
 }
