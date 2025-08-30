@@ -478,34 +478,6 @@ export interface ApiListList extends Struct.CollectionTypeSchema {
   };
 }
 
-export interface ApiOperationOperation extends Struct.CollectionTypeSchema {
-  collectionName: 'operations';
-  info: {
-    displayName: 'Operation';
-    pluralName: 'operations';
-    singularName: 'operation';
-  };
-  options: {
-    draftAndPublish: false;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::operation.operation'
-    > &
-      Schema.Attribute.Private;
-    name: Schema.Attribute.String;
-    publishedAt: Schema.Attribute.DateTime;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
 export interface ApiPostPost extends Struct.CollectionTypeSchema {
   collectionName: 'posts';
   info: {
@@ -1176,7 +1148,6 @@ declare module '@strapi/strapi' {
       'api::childbirth-plan.childbirth-plan': ApiChildbirthPlanChildbirthPlan;
       'api::client.client': ApiClientClient;
       'api::list.list': ApiListList;
-      'api::operation.operation': ApiOperationOperation;
       'api::post.post': ApiPostPost;
       'api::schedule.schedule': ApiScheduleSchedule;
       'api::term.term': ApiTermTerm;
