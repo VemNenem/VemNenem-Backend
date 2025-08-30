@@ -24,4 +24,16 @@ export default factories.createCoreController('api::client.client', ({ strapi })
         const sales = new ClientService();
         return sales.getHome(ctx);
     },
+    async createMaster(ctx) {
+        const sales = new ClientService();
+        return sales.createMaster(ctx);
+    },
+    async listMasters(ctx) {
+        const sales = new ClientService();
+        return sales.listMasters(ctx);
+    },
+    async deleteMaster(ctx) {
+        const sales = new ClientService();
+        return sales.deleteMaster(ctx);
+    },
 }))

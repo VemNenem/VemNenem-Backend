@@ -216,6 +216,107 @@ class ClientService {
     }
 
 
+    async createMaster(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const {
+                    name,
+                    email,
+                    password
+                }: CreateClientDTO = ctx.request.body;
+
+                const users = await strapi.documents("plugin::users-permissions.user").findMany({
+                    filters: {
+                        email: email
+                    }
+                })
+
+                if (users.length > 0) {
+                    throw new ApplicationError("E-mail já cadastrado")
+                }
+
+                const user = await strapi.documents("plugin::users-permissions.user").create({
+                    data: {
+                        username: name,
+                        email: email.toLowerCase(),
+                        provider: 'local',
+                        blocked: false,
+                        confirmed: true,
+                        password: password,
+                        role: 3,
+                    }
+                })
+
+
+                return user
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("Ocorreu um erro, tente novamente")
+            }
+        })
+    }
+
+    async listMasters(ctx) {
+        try {
+            const users = await strapi.documents("plugin::users-permissions.user").findMany({
+                filters: {
+                    role: { id: 3 }
+                },
+                sort: [{ username: 'asc' }]
+            })
+
+            return users
+        } catch (error) {
+            if (error instanceof ApplicationError) {
+                throw new ApplicationError(error.message);
+            }
+            console.log(error)
+            throw new ApplicationError("Ocorreu um erro, tente novamente")
+        }
+    }
+
+    async deleteMaster(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const { documentId: documentId } = ctx.state.user;
+                const { userDocumentId } = ctx.request.query
+
+                const user = await strapi.documents("plugin::users-permissions.user").findOne({
+                    documentId: documentId,
+                    populate: ['role']
+                })
+
+                if (!user.role || user.role.id !== 3) {
+                    throw new ApplicationError("Usuário não tem permissão")
+                }
+                const deleteuser = await strapi.documents("plugin::users-permissions.user").findOne({
+                    documentId: userDocumentId,
+                    populate: ['role']
+                })
+
+                if (!deleteuser.role || deleteuser.role.id !== 3) {
+                    throw new ApplicationError("Usuário nao pode ser excluido")
+                }
+
+                await strapi.documents("plugin::users-permissions.user").delete({
+                    documentId: deleteuser.documentId
+                })
+
+                return "Usuário excluido com sucesso"
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("Ocorreu um erro, tente novamente")
+            }
+        })
+    }
+
+
 
 
 } export { ClientService };

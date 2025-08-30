@@ -29,5 +29,20 @@ module.exports = {
             path: "/getHome",
             handler: "client.getHome",
         },
+        {
+            method: "POST",
+            path: "/createMaster",
+            handler: "client.createMaster",
+        },
+        {
+            method: "GET",
+            path: "/listMasters",
+            handler: "client.listMasters",
+        },
+        {
+            method: "DELETE",
+            path: "/deleteMaster",
+            handler: "client.deleteMaster",
+        },
     ]
 }
