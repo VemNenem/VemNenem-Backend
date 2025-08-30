@@ -373,6 +373,37 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiChildbirthPlanChildbirthPlan
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'childbirth_plans';
+  info: {
+    displayName: 'ChildbirthPlan';
+    pluralName: 'childbirth-plans';
+    singularName: 'childbirth-plan';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    clients: Schema.Attribute.Relation<'manyToMany', 'api::client.client'>;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::childbirth-plan.childbirth-plan'
+    > &
+      Schema.Attribute.Private;
+    name: Schema.Attribute.String;
+    publishedAt: Schema.Attribute.DateTime;
+    type: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiClientClient extends Struct.CollectionTypeSchema {
   collectionName: 'clients';
   info: {
@@ -391,6 +422,10 @@ export interface ApiClientClient extends Struct.CollectionTypeSchema {
     acceptTermDate: Schema.Attribute.DateTime;
     babyGender: Schema.Attribute.Enumeration<['Masculino', 'Feminino']>;
     babyName: Schema.Attribute.String;
+    childbirth_plans: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::childbirth-plan.childbirth-plan'
+    >;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1139,6 +1174,7 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::childbirth-plan.childbirth-plan': ApiChildbirthPlanChildbirthPlan;
       'api::client.client': ApiClientClient;
       'api::list.list': ApiListList;
       'api::operation.operation': ApiOperationOperation;

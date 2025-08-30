@@ -197,7 +197,7 @@ class ClientService {
             });
 
             const data = {
-                currentWeek: weeksPregnant, // em que semana está
+                currentWeek: weeksPregnant,
                 remaining: {
                     weeks: remainingWeeks,
                     days: remainingDays

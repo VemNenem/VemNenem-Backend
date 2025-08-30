@@ -1,0 +1,27 @@
+{
+  "kind": "collectionType",
+  "collectionName": "childbirth_plans",
+  "info": {
+    "singularName": "childbirth-plan",
+    "pluralName": "childbirth-plans",
+    "displayName": "ChildbirthPlan"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "clients": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::client.client",
+      "inversedBy": "childbirth_plans"
+    }
+  }
+}
