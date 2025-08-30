@@ -261,14 +261,35 @@ class ClientService {
 
     async listMasters(ctx) {
         try {
+
+            const { page, pageSize } = ctx.request.query
+            const currentPage = page ? parseInt(page.toString(), 10) : 1;
+            const perPage = pageSize ? parseInt(pageSize.toString(), 10) : 10;
+            const startIndex = (currentPage - 1) * perPage;
             const users = await strapi.documents("plugin::users-permissions.user").findMany({
                 filters: {
                     role: { id: 3 }
                 },
+                start: startIndex,
+                limit: perPage,
                 sort: [{ username: 'asc' }]
             })
+            const total = await strapi.documents("plugin::users-permissions.user").count({
+                filters: {
+                    role: { id: 3 }
+                }
+            })
+            const totalPages = Math.ceil(total / perPage);
 
-            return users
+            return {
+                users: users,
+                pagination: {
+                    total,
+                    totalPages,
+                    currentPage,
+                    pageSize: perPage
+                }
+            };
         } catch (error) {
             if (error instanceof ApplicationError) {
                 throw new ApplicationError(error.message);

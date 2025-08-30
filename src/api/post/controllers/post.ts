@@ -16,4 +16,16 @@ export default factories.createCoreController('api::post.post', ({ strapi }) => 
         const sales = new PostService();
         return sales.getPostsInClient(ctx);
     },
+    async listPostsInMaster(ctx) {
+        const sales = new PostService();
+        return sales.listPostsInMaster(ctx);
+    },
+    async deletePostInMaster(ctx) {
+        const sales = new PostService();
+        return sales.deletePostInMaster(ctx);
+    },
+    async createPost(ctx) {
+        const sales = new PostService();
+        return sales.createPost(ctx);
+    },
 }));

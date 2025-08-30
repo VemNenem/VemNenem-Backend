@@ -19,5 +19,20 @@ module.exports = {
             path: "/getPostsInClient",
             handler: "post.getPostsInClient",
         },
+        {
+            method: "GET",
+            path: "/listPostsInMaster",
+            handler: "post.listPostsInMaster",
+        },
+        {
+            method: "DELETE",
+            path: "/deletePostInMaster",
+            handler: "post.deletePostInMaster",
+        },
+        {
+            method: "POST",
+            path: "/createPost",
+            handler: "post.createPost",
+        },
     ]
 }
