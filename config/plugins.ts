@@ -1,18 +1,18 @@
 module.exports = ({ env }) => ({
-    // email: {
-    //     config: {
-    //         provider: 'strapi-provider-email-brevo',
-    //         providerOptions: {
-    //             host: env('SMTP_USERNAME'),
-    //             apiKey: env('BREVO_API_KEY')
-    //         },
-    //         settings: {
-    //             defaultSenderEmail: env('SMTP_DEFAULT_SENDER'),
-    //             defaultSenderName: env('SMTP_DEFAULT_NAME'),
-    //             defaultReplyTo: env('SMTP_DEFAULT_REPLY'),
-    //         },
-    //     },
-    // },
+    email: {
+        config: {
+            provider: 'strapi-provider-email-brevo',
+            providerOptions: {
+                host: env('SMTP_USERNAME'),
+                apiKey: env('BREVO_API_KEY')
+            },
+            settings: {
+                defaultSenderEmail: env('SMTP_DEFAULT_SENDER'),
+                defaultSenderName: env('SMTP_DEFAULT_NAME'),
+                defaultReplyTo: env('SMTP_DEFAULT_REPLY'),
+            },
+        },
+    },
     // email: {
     //     config: {
     //         provider: 'nodemailer',
