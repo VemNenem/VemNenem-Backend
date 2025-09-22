@@ -17,4 +17,8 @@ export default factories.createCoreController('api::childbirth-plan.childbirth-p
         const sales = new ChildbirthPlanService();
         return sales.selectOrUnselectChildbirthPlan(ctx);
     },
+    async pdfChildbirthPlan(ctx) {
+        const sales = new ChildbirthPlanService();
+        return sales.pdfChildbirthPlan(ctx);
+    },
 }));

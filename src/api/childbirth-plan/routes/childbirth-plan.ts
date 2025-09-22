@@ -20,5 +20,10 @@ module.exports = {
             path: "/selectOrUnselectChildbirthPlan",
             handler: "childbirth-plan.selectOrUnselectChildbirthPlan",
         },
+        {
+            method: "GET",
+            path: "/pdfChildbirthPlan",
+            handler: "childbirth-plan.pdfChildbirthPlan",
+        },
     ]
 }
