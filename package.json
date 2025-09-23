@@ -6,7 +6,7 @@
   "scripts": {
     "build": "strapi build",
     "console": "strapi console",
-    "deploy": "strapi deploy",
+    "deploy": "git pull && yarn install && yarn clean && yarn build && pm2 delete vem-nenem || true && pm2 start yarn --name 'vem-nenem' -- start && pm2 save",
     "dev": "strapi develop",
     "develop": "strapi develop",
     "start": "strapi start",
