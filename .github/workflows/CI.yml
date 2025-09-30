@@ -10,52 +10,36 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      
-      - name: Setup Node.js environment
+
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 20.x
+          node-version: 18.x
 
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-
-      - uses: actions/cache@v3
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      # Instalar as dependências
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: npm install
 
-      # Build do Strapi Admin
-      - name: Build Strapi Admin
-        run: NODE_ENV=production yarn build
+      - name: Run Build
+        run: npm run build
 
-      # Copiar código para Digital Ocean
-      - name: Copy code to Digital Ocean
-        uses: appleboy/scp-action@v0.1.3
+      - name: Copy to Digital Ocean
+        uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.HOST }}
           username: root
           port: 22
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           source: ".,!node_modules"
-          target: "/VemNenem-Backend"
+          target: '/VemNenem-Backend'
 
-      # Executar no servidor
-      - name: Deploy on server
+      - name: Restart application
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: root
           port: 22
-          key: ${{ secrets.SSH_KEY }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /VemNenem-Backend
-            yarn install --production --frozen-lockfile
-            pm2 restart vem-nenem || pm2 start yarn --name "vem-nenem" -- start
+            npm install --production
+            pm2 restart all
