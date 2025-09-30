@@ -3,7 +3,7 @@ name: Deploy Strapi
 on:
   push:
     branches:
-      - main # roda quando der push na main
+      - main
 
 jobs:
   deploy:
@@ -23,8 +23,16 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
             cd /VemNenem-Backend
             git pull origin main
+            
+            # Instalar dependências (incluindo dev para o build)
             npm install
-            npm run build
-            npm install --production
-            pm2 restart vem-nenem || pm2 start yarn --name "vem-nenem" -- start
+            
+            # Build com limite de memória
+            NODE_OPTIONS="--max-old-space-size=1536" npm run build
+            
+            # Reiniciar PM2
+            pm2 restart vem-nenem
+            
+            # Ver se está rodando
+            pm2 list
           EOF
