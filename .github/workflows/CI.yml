@@ -10,7 +10,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      # Copia APENAS o código fonte (sem build)
       - name: Copy code to Digital Ocean
         uses: appleboy/scp-action@v1
         with:
@@ -21,7 +20,6 @@ jobs:
           source: '.,!node_modules,!build,!.cache'
           target: '/VemNenem-Backend'
       
-      # Instala, builda e reinicia NO SERVIDOR
       - name: Deploy on server
         uses: appleboy/ssh-action@master
         with:
@@ -31,11 +29,18 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd /VemNenem-Backend
+            
             # Limpa builds antigos
             rm -rf build .cache
-            # Instala dependências
-            yarn --frozen-lockfile
-            # Builda NO SERVIDOR (não no CI)
+            
+            # Instala TODAS as dependências (incluindo dev)
+            yarn install --frozen-lockfile
+            
+            # Builda o admin
             NODE_ENV=production yarn build
+            
+            # limpa devDependencies
+            yarn install --production --frozen-lockfile
+            
             # Reinicia o PM2
             pm2 restart vem-nenem || pm2 start yarn --name "vem-nenem" -- start
