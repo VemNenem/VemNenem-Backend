@@ -25,7 +25,7 @@ jobs:
           cache: 'yarn'
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --ignore-engines
 
       - name: Build project
         run: yarn build
@@ -57,7 +57,7 @@ jobs:
           ssh root@${{ secrets.USER }} << 'EOF'
             cd /VemNenem-Backend || exit 1
             git pull origin main || git pull origin master
-            yarn install
+            yarn install --ignore-engines
             yarn build
             pm2 restart vem-nenem || pm2 start yarn --name vem-nenem -- start
           EOF
