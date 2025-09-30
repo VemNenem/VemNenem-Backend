@@ -1,45 +1,29 @@
-name: CI
+name: Deploy Strapi
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main # roda quando der push na main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          node-version: 18.x
+          ssh-private-key: ${{ secrets.SSH_KEY }}
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run Build
-        run: npm run build
-
-      - name: Copy to Digital Ocean
-        uses: appleboy/scp-action@v1
-        with:
-          host: ${{ secrets.HOST }}
-          username: root
-          port: 22
-          key: ${{ secrets.SSH_KEY }}
-          source: ".,!node_modules"
-          target: "/VemNenem-Backend"
-
-      - name: Restart application
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: root
-          port: 22
-          key: ${{ secrets.SSH_KEY }}
-          script: |
+      - name: Deploy to server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
             cd /VemNenem-Backend
-            npm install --production
-            pm2 restart all
+            git pull origin main
+            yarn ci --omit=dev
+            yarn build
+            pm2 restart vem-nenem || pm2 start yarn --name "vem-nenem" -- start
+          EOF
