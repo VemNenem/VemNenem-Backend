@@ -21,9 +21,20 @@ jobs:
       - name: Deploy to server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
-            set -e  # Para o script se qualquer comando falhar
+            set -e
+            
+            # Corrige problema de segurança do Git
+            git config --global --add safe.directory /VemNenem-Backend
             
             cd /VemNenem-Backend
+            
+            # Verifica espaço em disco antes de continuar
+            echo "Verificando espaço em disco..."
+            df -h /
+            
+            # Limpa caches antes do deploy
+            yarn cache clean
+            rm -rf node_modules/.cache
             
             # Atualiza o código
             git pull origin main
@@ -31,17 +42,14 @@ jobs:
             # Instala dependências
             yarn install
             
-            # Limpa builds anteriores e constrói a aplicação completa
-            rm -rf .cache
-            rm -rf build
-            rm -rf dist
+            # Limpa builds anteriores
+            rm -rf .cache build dist
             
-            # Build do Strapi (incluindo admin)
+            # Build do Strapi
             NODE_ENV=production yarn build
-            
-            # Reinstala apenas dependências de produção (opcional)
-            yarn install --production --frozen-lockfile
             
             # Reinicia a aplicação
             pm2 restart vem-nenem || pm2 start yarn --name "vem-nenem" -- start
+            
+            echo "Deploy realizado com sucesso!"
           EOF
