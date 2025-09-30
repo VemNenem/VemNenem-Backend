@@ -3,7 +3,7 @@ name: Deploy Strapi
 on:
   push:
     branches:
-      - main # roda quando der push na main
+      - main
 
 jobs:
   deploy:
@@ -21,9 +21,27 @@ jobs:
       - name: Deploy to server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+            set -e  # Para o script se qualquer comando falhar
+            
             cd /VemNenem-Backend
+            
+            # Atualiza o código
             git pull origin main
+            
+            # Instala dependências
             yarn install
-            yarn build
+            
+            # Limpa builds anteriores e constrói a aplicação completa
+            rm -rf .cache
+            rm -rf build
+            rm -rf dist
+            
+            # Build do Strapi (incluindo admin)
+            NODE_ENV=production yarn build
+            
+            # Reinstala apenas dependências de produção (opcional)
+            yarn install --production --frozen-lockfile
+            
+            # Reinicia a aplicação
             pm2 restart vem-nenem || pm2 start yarn --name "vem-nenem" -- start
           EOF
