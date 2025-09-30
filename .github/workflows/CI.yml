@@ -19,11 +19,13 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
       - name: Deploy to server
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
-            cd /var/www/seu-projeto
-            git pull origin main
-            npm install --production
-            npm run build
-            pm2 restart strapi  # nome do seu processo no pm2
-          EOF
+  run: |
+    ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+      cd /VemNemem-Backend
+      git pull origin main
+      npm ci --omit=dev
+      npm run build
+      pm2 restart vem-nenem || pm2 start npm --name "vem-nenem" -- start
+    EOF
+
+
