@@ -1,29 +1,60 @@
-name: Deploy Strapi
+name: CI
 
 on:
   push:
-    branches:
-      - main # roda quando der push na main
+    branches: [main]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+      - name: Setup Node.js
+        uses: actions/setup-node@v2.1.2
         with:
-          ssh-private-key: ${{ secrets.SSH_KEY }}
+          node-version: 20.x
 
-      - name: Deploy to server
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      # Instala dependências e builda
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+
+      - name: Build Strapi Admin
+        run: NODE_ENV=production yarn build
+
+      # Copia os arquivos para o servidor
+      - name: Copy code to Digital Ocean
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: root # ou "deploy" se teu usuário for esse
+          port: 22
+          key: ${{ secrets.SSH_KEY }}
+          source: '.,!node_modules'
+          target: '/VemNenem-Backend'
+
+      # Executa no servidor remoto
+      - name: Restart PM2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: root # ou "deploy"
+          port: 22
+          key: ${{ secrets.SSH_KEY }}
+          script: |
             cd /VemNenem-Backend
-            git pull origin main
-            npm ci --omit=dev
-            npm run build
-            pm2 restart vem-nenem || pm2 start npm --name "vem-nenem" -- start
-          EOF
+            yarn --frozen-lockfile --production
+            pm2 restart vem-nenem || pm2 start yarn --name "vem-nenem" -- start
