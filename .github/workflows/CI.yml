@@ -3,7 +3,7 @@ name: Deploy Strapi
 on:
   push:
     branches:
-      - main  # roda quando der push na main
+      - main # roda quando der push na main
 
 jobs:
   deploy:
@@ -19,13 +19,11 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
       - name: Deploy to server
-  run: |
-    ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
-      cd /VemNemem-Backend
-      git pull origin main
-      npm ci --omit=dev
-      npm run build
-      pm2 restart vem-nenem || pm2 start npm --name "vem-nenem" -- start
-    EOF
-
-
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+            cd /VemNenem-Backend
+            git pull origin main
+            npm ci --omit=dev
+            npm run build
+            pm2 restart vem-nenem || pm2 start npm --name "vem-nenem" -- start
+          EOF
