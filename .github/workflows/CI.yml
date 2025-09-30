@@ -23,7 +23,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
             cd /VemNenem-Backend
             git pull origin main
-            yarn ci --omit=dev
+            yarn install
             yarn build
             pm2 restart vem-nenem || pm2 start yarn --name "vem-nenem" -- start
           EOF
