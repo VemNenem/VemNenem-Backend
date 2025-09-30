@@ -26,5 +26,5 @@ jobs:
             npm install
             npm run build
             npm install --production
-            pm2 restart all
+            pm2 restart vem-nenem || pm2 start yarn --name "vem-nenem" -- start
           EOF
