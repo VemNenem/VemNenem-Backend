@@ -1,0 +1,29 @@
+name: Deploy Strapi
+
+on:
+  push:
+    branches:
+      - main  # roda quando der push na main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy to server
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.HOST }} << 'EOF'
+            cd /var/www/seu-projeto
+            git pull origin main
+            npm install --production
+            npm run build
+            pm2 restart strapi  # nome do seu processo no pm2
+          EOF
