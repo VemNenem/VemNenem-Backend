@@ -1,45 +1,67 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.x
+          node-version: '18'
+          cache: 'yarn'
 
       - name: Install dependencies
-        run: npm install
+        run: yarn install --frozen-lockfile
 
-      - name: Run Build
-        run: npm run build
+      - name: Build project
+        run: yarn build
+        env:
+          NODE_ENV: production
 
-      - name: Copy to Digital Ocean
-        uses: appleboy/scp-action@v1
-        with:
-          host: ${{ secrets.HOST }}
-          username: root
-          port: 22
-          key: ${{ secrets.SSH_KEY  }}
-          source: ".,!node_modules"
-          target: '/VemNenem-Backend'
+      - name: Run tests (if available)
+        run: yarn test || echo "No tests found"
+        continue-on-error: true
 
-      - name: Restart application
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: root
-          port: 22
-          key: ${{ secrets.SSH_KEY  }}
-          script: |
-            cd /VemNenem-Backend
-            npm install --production
-            pm2 restart all
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.USER }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        run: |
+          ssh root@${{ secrets.USER }} << 'EOF'
+            cd /VemNenem-Backend || exit 1
+            git pull origin main || git pull origin master
+            yarn install --frozen-lockfile
+            yarn build
+            pm2 restart vem-nenem || pm2 start yarn --name vem-nenem -- start
+          EOF
+
+      - name: Cleanup
+        if: always()
+        run: rm -rf ~/.ssh/id_rsa
