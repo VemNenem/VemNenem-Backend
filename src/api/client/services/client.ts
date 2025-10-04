@@ -337,6 +337,128 @@ class ClientService {
         })
     }
 
+    async listUsersInMaster(ctx) {
+        try {
+
+            const { page, pageSize } = ctx.request.query
+            const currentPage = page ? parseInt(page.toString(), 10) : 1;
+            const perPage = pageSize ? parseInt(pageSize.toString(), 10) : 10;
+            const startIndex = (currentPage - 1) * perPage;
+            const users = await strapi.documents("plugin::users-permissions.user").findMany({
+                filters: {
+                    role: { id: 1 }
+                },
+                start: startIndex,
+                limit: perPage,
+                sort: [{ username: 'asc' }]
+            })
+            const total = await strapi.documents("plugin::users-permissions.user").count({
+                filters: {
+                    role: { id: 1 }
+                }
+            })
+            const totalPages = Math.ceil(total / perPage);
+
+            return {
+                users: users,
+                pagination: {
+                    total,
+                    totalPages,
+                    currentPage,
+                    pageSize: perPage
+                }
+            };
+        } catch (error) {
+            if (error instanceof ApplicationError) {
+                throw new ApplicationError(error.message);
+            }
+            console.log(error)
+            throw new ApplicationError("Ocorreu um erro, tente novamente")
+        }
+    }
+
+    async deleteUserInMaster(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const { documentId: documentId } = ctx.state.user;
+                const { userDocumentId } = ctx.request.query
+
+                const user = await strapi.documents("plugin::users-permissions.user").findOne({
+                    documentId: documentId,
+                    populate: ['role']
+                })
+
+                if (!user.role || user.role.id !== 3) {
+                    throw new ApplicationError("Usuário não tem permissão")
+                }
+                const deleteuser = await strapi.documents("plugin::users-permissions.user").findOne({
+                    documentId: userDocumentId,
+                    populate: ['role']
+                })
+
+                if (!deleteuser.role || deleteuser.role.id !== 1) {
+                    throw new ApplicationError("Usuário nao pode ser excluido")
+                }
+
+                await strapi.documents("plugin::users-permissions.user").delete({
+                    documentId: deleteuser.documentId
+                })
+
+                return "Usuário excluido com sucesso"
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("Ocorreu um erro, tente novamente")
+            }
+        })
+    }
+
+    async blockAndUnblockUser(ctx) {
+        try {
+            const { documentId: documentId } = ctx.state.user;
+            const { userDocumentId } = ctx.request.query
+            const { blocked } = ctx.request.body
+            const user = await strapi.documents("plugin::users-permissions.user").findOne({
+                documentId: documentId,
+                populate: ['role']
+            })
+
+            if (!user.role || user.role.id !== 3) {
+                throw new ApplicationError("Usuário não tem permissão")
+            }
+
+            const blockuser = await strapi.documents("plugin::users-permissions.user").findOne({
+                documentId: userDocumentId,
+                populate: ['role']
+            })
+
+            if (!blockuser.role || blockuser.role.id !== 1) {
+                throw new ApplicationError("Usuário não pode ser bloqueado")
+            }
+
+            await strapi.documents("plugin::users-permissions.user").update({
+                documentId: blockuser.documentId,
+                data: {
+                    blocked: blocked
+                }
+            })
+            if (blocked === false) {
+                return "Usuário desbloqueado com sucesso"
+            } else {
+                return "Usuário bloqueado com sucesso"
+            }
+
+        } catch (error) {
+            if (error instanceof ApplicationError) {
+                throw new ApplicationError(error.message);
+            }
+            console.log(error)
+            throw new ApplicationError("Ocorreu um erro, tente novamente")
+        }
+    }
+
 
 
 

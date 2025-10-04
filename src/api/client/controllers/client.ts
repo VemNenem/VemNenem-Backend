@@ -36,4 +36,16 @@ export default factories.createCoreController('api::client.client', ({ strapi })
         const sales = new ClientService();
         return sales.deleteMaster(ctx);
     },
+    async listUsersInMaster(ctx) {
+        const sales = new ClientService();
+        return sales.listUsersInMaster(ctx);
+    },
+    async deleteUserInMaster(ctx) {
+        const sales = new ClientService();
+        return sales.deleteUserInMaster(ctx);
+    },
+    async blockAndUnblockUser(ctx) {
+        const sales = new ClientService();
+        return sales.blockAndUnblockUser(ctx);
+    },
 }))

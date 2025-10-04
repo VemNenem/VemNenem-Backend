@@ -44,5 +44,20 @@ module.exports = {
             path: "/deleteMaster",
             handler: "client.deleteMaster",
         },
+        {
+            method: "GET",
+            path: "/listUsersInMaster",
+            handler: "client.listUsersInMaster",
+        },
+        {
+            method: "DELETE",
+            path: "/deleteUserInMaster",
+            handler: "client.deleteUserInMaster",
+        },
+        {
+            method: "PATCH",
+            path: "/blockAndUnblockUser",
+            handler: "client.blockAndUnblockUser",
+        },
     ]
 }
