@@ -52,4 +52,8 @@ export default factories.createCoreController('api::client.client', ({ strapi })
         const sales = new ClientService();
         return sales.deleteMyClient(ctx);
     },
+    async forgotPassword(ctx) {
+        const sales = new ClientService();
+        return sales.forgotPassword(ctx);
+    },
 }))

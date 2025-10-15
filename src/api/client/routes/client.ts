@@ -64,5 +64,10 @@ module.exports = {
             path: "/deleteMyClient",
             handler: "client.deleteMyClient",
         },
+        {
+            method: "POST",
+            path: "/forgotPassword",
+            handler: "client.forgotPassword",
+        },
     ]
 }

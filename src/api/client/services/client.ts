@@ -570,6 +570,87 @@ class ClientService {
         })
     }
 
+    async forgotPassword(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const crypto = require('crypto')
+                const { email } = ctx.request.body
+
+                const users = await strapi.documents('plugin::users-permissions.user').findMany({
+                    filters: {
+                        email: email
+                    }
+                })
+                if (users.length === 0) {
+                    throw new ApplicationError("Usuário não encontrado com esse e-mail")
+                }
+
+                const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                    documentId: users[0].documentId, populate: ['client', 'role',]
+                })
+
+                let name = ''
+
+                if (user.client) {
+                    name = user.client.name ? user.client.name : user.username
+                } else {
+                    throw new ApplicationError("Usuário com esse e-mail não encontrado")
+                }
+
+
+                if (name === '' || !name) {
+                    name = user.username
+                }
+
+
+                const resetPasswordToken = crypto.randomBytes(64).toString('hex');
+                const userCode = await strapi.documents('plugin::users-permissions.user').update({
+                    documentId: user.documentId,
+                    data: {
+                        resetPasswordToken: resetPasswordToken,
+                        // resetCodeExpiration: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                    }
+                })
+
+                let message = '';
+
+
+                message = `
+             <div>
+        <p>Olá,  ${name}!👋</p>
+        
+        <p>Recebemos uma solicitação para redefinir a sua senha. 
+        Para criar uma nova senha e recuperar o acesso à sua conta, clique no 
+        botão abaixo: </p>
+        
+          <p><a href="">Redefinir Senha</a></p>
+        
+        <p>Se você não solicitou essa alteração, pode ignorar este e-mail. Sua conta 
+        permanecerá segura.</p>
+        
+        
+        <p>Caso tenha qualquer dúvida ou precise de ajuda, entre em contato com a gente./p>
+        
+    </div>`
+
+                await strapi.plugins['email'].services.email.send({
+                    to: user.email,
+                    from: process.env.SMTP_USERNAME,
+                    subject: 'Redefinição de senha – Vem Nenem',
+                    text: message,
+                })
+
+                return "E-mail enviado com sucesso"
+
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("E-mail de redefinição falhou, tente novamente ")
+            }
+        })
+    }
 
 
 
