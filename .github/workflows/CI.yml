@@ -28,6 +28,9 @@ jobs:
             npm install
             
             # Build com limite de memória
+            rm -rf .cache
+            rm -rf build
+            rm -rf dist
             NODE_OPTIONS="--max-old-space-size=1536" npm run build
             
             # Reiniciar PM2
