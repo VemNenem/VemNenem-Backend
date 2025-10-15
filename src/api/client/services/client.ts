@@ -393,12 +393,52 @@ class ClientService {
                 }
                 const deleteuser = await strapi.documents("plugin::users-permissions.user").findOne({
                     documentId: userDocumentId,
-                    populate: ['role']
+                    populate: ['role', 'client']
                 })
 
-                if (!deleteuser.role || deleteuser.role.id !== 1) {
-                    throw new ApplicationError("Usuário nao pode ser excluido")
+                if (!deleteuser.role || deleteuser.role.id !== 1 || !deleteuser.client) {
+                    throw new ApplicationError("Usuário não pode ser excluido")
                 }
+
+                const client = await strapi.documents("api::client.client").findOne({
+                    documentId: deleteuser.client.documentId,
+                    populate: {
+                        lists: {
+                            populate: {
+                                topics: true
+                            }
+                        },
+                        schedules: true
+                    }
+                })
+
+                if (client.lists.length > 0) {
+                    for (const list of client.lists) {
+                        if (list.topics.length > 0) {
+                            for (const topic of list.topics) {
+                                await strapi.documents("api::topic.topic").delete({
+                                    documentId: topic.documentId
+                                })
+                            }
+                        }
+                        await strapi.documents("api::list.list").delete({
+                            documentId: list.documentId
+                        })
+                    }
+                }
+
+                if (client.schedules.length > 0) {
+                    for (const schedule of client.schedules) {
+                        await strapi.documents("api::schedule.schedule").delete({
+                            documentId: schedule.documentId
+                        })
+                    }
+                }
+
+                await strapi.documents("api::client.client").delete({
+                    documentId: client.documentId
+                })
+
 
                 await strapi.documents("plugin::users-permissions.user").delete({
                     documentId: deleteuser.documentId
@@ -459,6 +499,76 @@ class ClientService {
         }
     }
 
+    async deleteMyClient(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const { documentId: documentId } = ctx.state.user;
+
+                const user = await strapi.documents("plugin::users-permissions.user").findOne({
+                    documentId: documentId,
+                    populate: ['client']
+                })
+
+                if (!user || !user.client) {
+                    throw new ApplicationError("Usuário não encontrado")
+                }
+
+
+                const client = await strapi.documents("api::client.client").findOne({
+                    documentId: user.client.documentId,
+                    populate: {
+                        lists: {
+                            populate: {
+                                topics: true
+                            }
+                        },
+                        schedules: true
+                    }
+                })
+
+                if (client.lists.length > 0) {
+                    for (const list of client.lists) {
+                        if (list.topics.length > 0) {
+                            for (const topic of list.topics) {
+                                await strapi.documents("api::topic.topic").delete({
+                                    documentId: topic.documentId
+                                })
+                            }
+                        }
+                        await strapi.documents("api::list.list").delete({
+                            documentId: list.documentId
+                        })
+                    }
+                }
+
+                if (client.schedules.length > 0) {
+                    for (const schedule of client.schedules) {
+                        await strapi.documents("api::schedule.schedule").delete({
+                            documentId: schedule.documentId
+                        })
+                    }
+                }
+
+
+                await strapi.documents("api::client.client").delete({
+                    documentId: client.documentId
+                })
+
+
+                await strapi.documents("plugin::users-permissions.user").delete({
+                    documentId: user.documentId
+                })
+
+                return "Usuário excluido com sucesso"
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("Ocorreu um erro, tente novamente")
+            }
+        })
+    }
 
 
 

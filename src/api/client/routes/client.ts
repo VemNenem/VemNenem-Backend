@@ -59,5 +59,10 @@ module.exports = {
             path: "/blockAndUnblockUser",
             handler: "client.blockAndUnblockUser",
         },
+        {
+            method: "DELETE",
+            path: "/deleteMyClient",
+            handler: "client.deleteMyClient",
+        },
     ]
 }
