@@ -137,8 +137,6 @@ class ChildbirthPlanService {
         }
     }
 
-
-
     async pdfChildbirthPlan(ctx) {
         try {
             const fs = require('fs');
@@ -200,38 +198,138 @@ class ChildbirthPlanService {
             const clientName = client.name ? client.name.replace(/\s+/g, '_') : 'cliente_desconhecido';
             const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
 
+            // Cores
+            const primaryColor = '#27d3d6';
+            const backgroundColor = '#f9f9f9';
+            const textColor = '#333333';
 
             // Gera o PDF e salva no disco
-            const doc = new PDFDocument();
+            const doc = new PDFDocument({ margin: 50 });
+
+            // Função para adicionar rodapé
+            const addFooter = () => {
+                const bottom = doc.page.height - 50;
+                doc.fillColor('#999999')
+                    .fontSize(10)
+                    .text(
+                        `Gerado em ${new Date().toLocaleDateString('pt-BR')}`,
+                        50,
+                        bottom,
+                        { align: 'center', lineBreak: false }
+                    );
+            };
+
+            // Função para criar uma nova página com rodapé na anterior
+            const createNewPage = () => {
+                addFooter(); // Adiciona rodapé na página atual antes de criar nova
+                doc.addPage();
+            };
+
+            // Fundo colorido para o cabeçalho
+            doc.rect(0, 0, doc.page.width, 120).fill(primaryColor);
 
             // Cabeçalho do PDF
-            doc.fontSize(20).text('Plano de Parto', { align: 'center' });
-            doc.moveDown(1);
-            doc.fontSize(12).text(`Cliente: ${client.name || 'Não especificado'}`, { align: 'left' });
-            doc.moveDown(2);
+            doc.fillColor('#ffffff')
+                .fontSize(28)
+                .font('Helvetica-Bold')
+                .text('Plano de Parto', 50, 35, { align: 'center' });
+
+            doc.fillColor('#ffffff')
+                .fontSize(14)
+                .font('Helvetica')
+                .text(`Cliente: ${client.name || 'Não especificado'}`, 50, 75, { align: 'center' });
+
+            // Função para desenhar checkbox
+            const drawCheckbox = (x, y, checked) => {
+                const size = 12;
+
+                // Salva o estado atual
+                doc.save();
+
+                // Borda do checkbox
+                doc.roundedRect(x, y, size, size, 2)
+                    .lineWidth(1.5)
+                    .strokeColor(primaryColor)
+                    .stroke();
+
+                // Se marcado, desenha o check
+                if (checked) {
+                    // Preenche o fundo do checkbox
+                    doc.roundedRect(x + 2, y + 2, size - 4, size - 4, 1)
+                        .fillColor(primaryColor)
+                        .fill();
+
+                    // Desenha o símbolo de check (✓)
+                    doc.fillColor('#ffffff')
+                        .fontSize(10)
+                        .font('Helvetica-Bold')
+                        .text('✓', x + 2, y, {
+                            width: size,
+                            align: 'center'
+                        });
+                }
+
+                // Restaura o estado
+                doc.restore();
+            };
 
             // Itera pelos tipos na ordem
+            let yPosition = 150;
+
             Object.keys(typeOrder).forEach((type) => {
                 if (groupedPlans[type]) {
-                    doc.fontSize(16).text(type, { underline: true });
-                    doc.moveDown(0.5);
+                    // Verifica se precisa de nova página para o título da seção
+                    if (yPosition > doc.page.height - 150) {
+                        createNewPage();
+                        yPosition = 50;
+                    }
+
+                    // Título da seção com fundo
+                    doc.rect(50, yPosition, doc.page.width - 100, 35)
+                        .fill(backgroundColor);
+
+                    doc.fillColor(primaryColor)
+                        .fontSize(18)
+                        .font('Helvetica-Bold')
+                        .text(type, 60, yPosition + 10);
+
+                    yPosition += 45;
 
                     groupedPlans[type].forEach((plan) => {
-                        const check = plan.clientSelect ? '✓' : '□';
-                        doc.fontSize(12).text(`${check} ${plan.name}`);
-                        doc.moveDown(0.5);
+                        // Verifica se precisa de nova página
+                        if (yPosition > doc.page.height - 100) {
+                            createNewPage();
+                            yPosition = 50;
+                        }
+
+                        // Desenha checkbox
+                        drawCheckbox(60, yPosition, plan.clientSelect);
+
+                        // Texto do item
+                        doc.fillColor(textColor)
+                            .fontSize(12)
+                            .font('Helvetica')
+                            .text(plan.name, 80, yPosition, {
+                                width: doc.page.width - 130,
+                                lineGap: 2
+                            });
+
+                        yPosition += 25;
                     });
 
-                    doc.moveDown(1); // Espaço entre seções
+                    yPosition += 15; // Espaço entre seções
                 }
             });
+
+            // Adiciona rodapé na última página
+            addFooter();
 
             doc.end();
             const filename = `${clientName}-planoDeParto-${timestamp}.pdf`;
             const filePath = "./public/" + filename;
             doc.pipe(fs.createWriteStream(filePath));
 
-            return filename
+            return filename;
 
         } catch (error) {
             if (error instanceof ApplicationError) {
@@ -241,6 +339,4 @@ class ChildbirthPlanService {
             throw new ApplicationError("Ocorreu um erro, tente novamente");
         }
     }
-
-
 } export { ChildbirthPlanService }
