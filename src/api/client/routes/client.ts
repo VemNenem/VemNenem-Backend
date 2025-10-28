@@ -69,5 +69,10 @@ module.exports = {
             path: "/forgotPassword",
             handler: "client.forgotPassword",
         },
+        {
+            method: "POST",
+            path: "/resetPassword",
+            handler: "client.resetPassword",
+        },
     ]
 }

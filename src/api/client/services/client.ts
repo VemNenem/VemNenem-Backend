@@ -12,6 +12,7 @@ export default factories.createCoreService('api::client.client');
 
 const utils = require('@strapi/utils');
 const { ApplicationError } = utils.errors;
+const bcrypt = require('bcryptjs');
 class ClientService {
     async createClient(ctx) {
         return await strapi.db.transaction(async (trx) => {
@@ -602,13 +603,24 @@ class ClientService {
                     name = user.username
                 }
 
+                function gerarCodigoAleatorio() {
+                    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                    let codigo = '';
 
-                const resetPasswordToken = crypto.randomBytes(64).toString('hex');
+                    for (let i = 0; i < 6; i++) {
+                        const indice = Math.floor(Math.random() * caracteres.length);
+                        codigo += caracteres[indice];
+                    }
+
+                    return codigo;
+                }
+
+                const code = gerarCodigoAleatorio()
+                //const resetPasswordToken = crypto.randomBytes(64).toString('hex');
                 const userCode = await strapi.documents('plugin::users-permissions.user').update({
                     documentId: user.documentId,
                     data: {
-                        resetPasswordToken: resetPasswordToken,
-                        // resetCodeExpiration: new Date(Date.now() + 24 * 60 * 60 * 1000)
+                        resetPasswordToken: code,
                     }
                 })
 
@@ -616,22 +628,21 @@ class ClientService {
 
 
                 message = `
-             <div>
-        <p>Olá,  ${name}!👋</p>
-        
-        <p>Recebemos uma solicitação para redefinir a sua senha. 
-        Para criar uma nova senha e recuperar o acesso à sua conta, clique no 
-        botão abaixo: </p>
-        
-          <p><a href="">Redefinir Senha</a></p>
-        
-        <p>Se você não solicitou essa alteração, pode ignorar este e-mail. Sua conta 
-        permanecerá segura.</p>
-        
-        
-        <p>Caso tenha qualquer dúvida ou precise de ajuda, entre em contato com a gente./p>
-        
-    </div>`
+                        <div>
+                    <p>Olá, ${name}!👋</p>
+                    
+                    <p>Recebemos uma solicitação para redefinir a sua senha. 
+                    Para criar uma nova senha e recuperar o acesso à sua conta, por favor utilize o código abaixo para redefinir sua senha no aplicativo: </p>
+                    
+                    <p>${code}</p>
+                    
+                    <p>Se você não solicitou essa alteração, pode ignorar este e-mail. Sua conta 
+                    permanecerá segura.</p>
+                    
+                    
+                    <p>Caso tenha qualquer dúvida ou precise de ajuda, entre em contato com a gente./p>
+                    
+                </div>`
 
                 await strapi.plugins['email'].services.email.send({
                     to: user.email,
@@ -641,6 +652,56 @@ class ClientService {
                 })
 
                 return "E-mail enviado com sucesso"
+
+            } catch (error) {
+                if (error instanceof ApplicationError) {
+                    throw new ApplicationError(error.message);
+                }
+                console.log(error)
+                throw new ApplicationError("E-mail de redefinição falhou, tente novamente ")
+            }
+        })
+    }
+
+    async resetPassword(ctx) {
+        return await strapi.db.transaction(async (trx) => {
+            try {
+                const { resetPasswordToken, password, confirmPassword } = ctx.request.body
+
+                const users = await strapi.documents('plugin::users-permissions.user').findMany({
+                    filters: {
+                        resetPasswordToken: resetPasswordToken
+                    }
+                })
+                if (users.length === 0) {
+                    throw new ApplicationError("Código de redefinição inválido")
+                }
+
+                const user = await strapi.documents('plugin::users-permissions.user').findOne({
+                    documentId: users[0].documentId, populate: ['client', 'role',]
+                })
+
+
+                const mesmaSenha = await bcrypt.compare(password, user.password);
+
+                if (mesmaSenha) {
+                    throw new ApplicationError("A senha nova deve ser diferente da antiga");
+                }
+
+                if (password !== confirmPassword) {
+                    throw new ApplicationError("As senhas devem ser iguais")
+                }
+
+                const userCode = await strapi.documents('plugin::users-permissions.user').update({
+                    documentId: user.documentId,
+                    data: {
+                        password: password,
+                        resetPasswordToken: null
+                    }
+                })
+
+
+                return "Senha redefinida com sucesso"
 
             } catch (error) {
                 if (error instanceof ApplicationError) {
