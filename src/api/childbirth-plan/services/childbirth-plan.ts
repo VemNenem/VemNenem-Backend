@@ -14,16 +14,19 @@ class ChildbirthPlanService {
     async listChildbirthPlan(ctx) {
         try {
             const { documentId: userDocumentId } = ctx.state.user;
-
+            //acaha o user
             const user = await strapi.documents('plugin::users-permissions.user').findOne({
                 documentId: userDocumentId,
                 populate: ['client']
             });
 
+            //verificacao se tem user e user tem client
+
             if (!user || !user.client) {
                 throw new ApplicationError("Usuário não encontrado");
             }
 
+            //pegar o cliente
             const client = await strapi.documents('api::client.client').findOne({
                 documentId: user.client.documentId
             });
@@ -71,26 +74,34 @@ class ChildbirthPlanService {
         }
     }
 
+
+    //metodo para selecionar ou desselecionar um plano de parto
     async selectOrUnselectChildbirthPlan(ctx) {
         try {
             const { planDocumentId } = ctx.request.query;
             const { documentId: userDocumentId } = ctx.state.user;
             const { type } = ctx.request.body;
 
+            //acahr o user
             const user = await strapi.documents('plugin::users-permissions.user').findOne({
                 documentId: userDocumentId,
                 populate: ['client']
             });
 
+            //verificacao se tem user e user tem client
             if (!user || !user.client) {
                 throw new ApplicationError("Usuário não encontrado");
             }
 
+            //pegar o cliente
             const client = await strapi.documents('api::client.client').findOne({
                 documentId: user.client.documentId
             });
 
+
+            //se o type for de dessselecionar
             if (type === "unselect") {
+                //updadte desconectando o client
                 const up = await strapi.documents('api::childbirth-plan.childbirth-plan').update({
                     documentId: planDocumentId,
                     data: {
@@ -102,7 +113,9 @@ class ChildbirthPlanService {
                     populate: ['clients']
                 })
                 return up
+                //se o type for de selecionar
             } else if (type === "select") {
+                //updadte conectando o client
                 const up = await strapi.documents('api::childbirth-plan.childbirth-plan').update({
                     documentId: planDocumentId,
                     data: {
@@ -128,6 +141,8 @@ class ChildbirthPlanService {
         }
     }
 
+
+    //metodo para criar os planos de parto caso o banco seja perdido
     async postChildbirthPlan(ctx) {
         const { childPlans } = ctx.request.body;
         for (const field of childPlans) {
