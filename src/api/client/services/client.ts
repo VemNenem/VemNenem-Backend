@@ -728,7 +728,7 @@ class ClientService {
                     permanecerá segura.</p>
                     
                     
-                    <p>Caso tenha qualquer dúvida ou precise de ajuda, entre em contato com a gente./p>
+                    <p>Caso tenha qualquer dúvida ou precise de ajuda, entre em contato com a gente. </p>
                     
                 </div>`
 
