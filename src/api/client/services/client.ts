@@ -399,6 +399,7 @@ class ClientService {
                 filters: {
                     role: { id: 1 }
                 },
+                populate: ['client'],
                 start: startIndex,
                 limit: perPage,
                 sort: [{ username: 'asc' }]
