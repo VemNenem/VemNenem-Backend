@@ -223,10 +223,6 @@ class ClientService {
                     client: {
                         documentId: user.client.documentId
                     },
-                    // date: {
-                    //     $gte: startOfDay,
-                    //     $lte: endOfDay
-                    // }
                     date: todayString
                 }
             });
