@@ -207,12 +207,15 @@ class ClientService {
                 (remainingMs % (1000 * 60 * 60 * 24 * 7)) / (1000 * 60 * 60 * 24)
             );
 
-            // define o intervalo do dia atual para buscar agendamentos
-            const startOfDay = new Date();
-            startOfDay.setHours(0, 0, 0, 0);
 
-            const endOfDay = new Date();
-            endOfDay.setHours(23, 59, 59, 999);
+            const now = new Date();
+
+            // pega yyyy-mm-dd da data local (SEM timezone)
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+
+            const todayString = `${year}-${month}-${day}`;
 
             // busca os agendamentos do cliente para o dia atual
             const schedule = await strapi.documents('api::schedule.schedule').findMany({
@@ -220,10 +223,11 @@ class ClientService {
                     client: {
                         documentId: user.client.documentId
                     },
-                    date: {
-                        $gte: startOfDay,
-                        $lte: endOfDay
-                    }
+                    // date: {
+                    //     $gte: startOfDay,
+                    //     $lte: endOfDay
+                    // }
+                    date: todayString
                 }
             });
 
